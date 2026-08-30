@@ -1,7 +1,9 @@
 import os
 import random
+import threading
 import telebot
 from groq import Groq
+from flask import Flask
 
 # === CONFIGURAZIONE ===
 TELEGRAM_TOKEN = os.environ["TELEGRAM_TOKEN"]
@@ -26,8 +28,9 @@ FRASI_AMICO = [
     "Senti, io parlo per esperienza"
 ]
 
-# === SYSTEM PROMPT: ISTURISCE IL LLM A PARLARE COME LUI ===
+# === SYSTEM PROMPT: ISTRUISCE IL LLM A PARLARE COME LUI ===
 SYSTEM_PROMPT = """Sei un chatbot che risponde come se fossi il mio amico Marco.
+
 Caratteristiche:
 - Rispondi in italiano informale
 - Usa un tono amichevole e diretto
@@ -42,12 +45,21 @@ Caratteristiche:
 bot = telebot.TeleBot(TELEGRAM_TOKEN)
 client = Groq(api_key=GROQ_API_KEY)
 
+# === SERVER FINTO PER RENDER (soddisfa il controllo della porta) ===
+app = Flask(__name__)
+
+@app.route("/")
+def home():
+    return "Bot attivo"
+
+def run_web():
+    port = int(os.environ.get("PORT", 10000))
+    app.run(host="0.0.0.0", port=port)
 
 # === GESTIONE MESSAGGI ===
 @bot.message_handler(func=lambda message: True)
 def handle_message(message):
     user_msg = message.text
-
     try:
         # Chiedi a Groq una risposta sensata
         response = client.chat.completions.create(
@@ -77,8 +89,8 @@ def handle_message(message):
         print(f"Errore: {e}")
         bot.reply_to(message, "Bro, ho un attimo di crisi, riprova 😅")
 
-
 # === AVVIO ===
 if __name__ == "__main__":
+    threading.Thread(target=run_web, daemon=True).start()
     print("Bot avviato!")
     bot.infinity_polling()
