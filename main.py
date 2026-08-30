@@ -66,7 +66,7 @@ def handle_message(message):
     try:
         # Chiedi a Groq una risposta sensata
         response = client.chat.completions.create(
-            model="llama3-8b-8192",  # modello gratis e veloce
+            model="openai/gpt-oss-120b",  # modello gratis e veloce
             messages=[
                 {"role": "system", "content": SYSTEM_PROMPT},
                 {"role": "user", "content": user_msg}
