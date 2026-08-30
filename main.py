@@ -45,6 +45,9 @@ Caratteristiche:
 bot = telebot.TeleBot(TELEGRAM_TOKEN)
 client = Groq(api_key=GROQ_API_KEY)
 
+# Aggiunto per evitare conflitti (Error 409) su Render
+bot.remove_webhook()
+
 # === SERVER FINTO PER RENDER (soddisfa il controllo della porta) ===
 app = Flask(__name__)
 
@@ -63,7 +66,7 @@ def handle_message(message):
     try:
         # Chiedi a Groq una risposta sensata
         response = client.chat.completions.create(
-            model="llama-3.3-70b-versatile",  # modello gratis e veloce
+            model="llama-3.1-70b-versatile",  # modello gratis e veloce
             messages=[
                 {"role": "system", "content": SYSTEM_PROMPT},
                 {"role": "user", "content": user_msg}
