@@ -29,7 +29,7 @@ FRASI_AMICO = [
 ]
 
 # === SYSTEM PROMPT: ISTRUISCE IL LLM A PARLARE COME LUI ===
-SYSTEM_PROMPT = """Sei un chatbot che risponde come se fossi il mio amico Marco.
+SYSTEM_PROMPT = """Sei un chatbot che risponde come se fossi Fabrizio.
 
 Caratteristiche:
 - Rispondi in italiano informale
@@ -86,8 +86,12 @@ def handle_message(message):
         bot.reply_to(message, testo_finale)
 
     except Exception as e:
-        print(f"Errore: {e}")
-        bot.reply_to(message, "Bro, ho un attimo di crisi, riprova 😅")
+        # 'flush=True' forza la stampa immediata nei log di Render
+        print(f"ERRORE GRAVE: {e}", flush=True)
+
+        # Invia l'errore tecnico direttamente a te su Telegram per debug
+        messaggio_errore = f"Bro, ho un attimo di crisi, riprova 😅\n\n🔍 Errore tecnico: {e}"
+        bot.reply_to(message, messaggio_errore)
 
 # === AVVIO ===
 if __name__ == "__main__":
