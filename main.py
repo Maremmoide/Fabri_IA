@@ -66,7 +66,7 @@ def handle_message(message):
     try:
         # Chiedi a Groq una risposta sensata
         response = client.chat.completions.create(
-            model="llama-3.1-8b-instant",  # modello gratis e veloce
+            model="llama-3.3-70b-versatile",  # modello gratis e veloce
             messages=[
                 {"role": "system", "content": SYSTEM_PROMPT},
                 {"role": "user", "content": user_msg}
