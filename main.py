@@ -78,7 +78,7 @@ def handle_message(message):
         # Chiedi a Groq una risposta sensata
         # Se questo modello dà errore, vai su console.groq.com/playground e copia il nome esatto dal menu a tendina
         response = client.chat.completions.create(
-            model="mixtral-8x7b-32768",
+            model="openai/gpt-oss-120b",
             messages=[
                 {"role": "system", "content": SYSTEM_PROMPT},
                 {"role": "user", "content": user_msg}
