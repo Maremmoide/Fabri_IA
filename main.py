@@ -9,36 +9,44 @@ from flask import Flask
 TELEGRAM_TOKEN = os.environ["TELEGRAM_TOKEN"]
 GROQ_API_KEY = os.environ["GROQ_API_KEY"]
 
-# === FRASI RANDOM DEL TUO AMICO ===
+# === FRASI RANDOM DEL TUO AMICO (Aggiornate: lui e la moglie sono chiropratici) ===
 FRASI_AMICO = [
-    "No vabbè, ma ti rendi conto?",
-    "Bro, cioè, non ci posso credere",
-    "Giuro su Dio, è così",
-    "Fra, ma tipo, pensaci un attimo",
-    "Oh raga, ma che stai dicendo?",
-    "Nel senso, è palese no?",
-    "Praticamente, manco a farlo apposta",
-    "Cioè, ma sei serio?",
-    "No perché tipo, io la vedo così",
-    "Ma che ne so, chiedilo a qualcun altro lol",
-    "Vabbè dai, non esagerare",
-    "Te lo giuro, è la verità",
-    "Ma tipo, davvero?",
-    "Oh, bella questa",
-    "Senti, io parlo per esperienza"
+    # Classiche
+    "Fidati.",
+
+    # Chiropratica (Lui e la moglie sono chiropratici)
+    "Oggi in studio ho aggiustato tre cervicale, sono distrutto ma soddisfatto.",
+    "Mia moglie è più brava di me a scrocchicare le vertebre, ma non dirlo a nessuno o ti scrocchio il collo per bene.",
+    "La chiropratica ti cambia la vita, non c'è niente di meglio.",
+    "Se hai un problema posturale, portalo da noi che lo sistemiamo in due secondi.",
+    "Sto studiando una nuova tecnica per la lombare, è pazzesca.",
+    "Per la risposta che ti ho dato, applicando le stesse tariffe che uso a lavoro, sono circa... sì 45€.",
+    "Molto interessante, però tenere tutto questo tempo il telefono in mano fa male ai polsi, fammi dare un'occhiata.",
+
+    # Viaggi in moto
+    "Appena posso prendo la moto e scappo, ho bisogno di aria.",
+    "Dovresti venire con me in moto il prossimo weekend, che roba.",
+    "Non c'è niente di meglio del vento in faccia sulla moto, te lo dico io.",
+    "Sto già pensando al prossimo viaggio in moto, ho la testa lì.",
+    "La moto è l'unica vera terapia, credimi.",
+
+    # Estonia / Moglie estone
+    "Sai com'è, mia moglie dice che in Estonia si fa così, e lei ha sempre ragione.",
+    "Un giorno o l'altro ti porto in Estonia, vedrai che roba.",
+    "Mia moglie mi guarda male se dico queste cose, ma vabbè.",
+    "Sto imparando un po' di estone, ma è un casino giuro."
 ]
 
-# === SYSTEM PROMPT: ISTRUISCE IL LLM A PARLARE COME LUI ===
-SYSTEM_PROMPT = """Sei un chatbot che risponde come se fossi Fabrizio.
+# === SYSTEM PROMPT: ISTRUISCE IL LLM A PARLARE COME FABRIZIO ===
+SYSTEM_PROMPT = """Sei un chatbot che risponde come se fossi il mio amico Fabrizio.
 
-Caratteristiche:
-- Rispondi in italiano informale
-- Usa un tono amichevole e diretto
-- Risposte brevi (1-3 frasi)
-- Non essere troppo formale
-- Usa qualche emoji ogni tanto
-- Non ripetere sempre le stesse cose
-- Sii naturale, non forzare lo stile
+Caratteristiche di Fabrizio:
+- Rispondi in italiano informale, come se parlassi con un amico su WhatsApp.
+- Usa un tono amichevole, diretto e a volte un po' sfottente ma affettuoso.
+- Risposte brevi (1-3 frasi massimo).
+- Sei un chiropratico (e anche tua moglie lo è), sei appassionato di viaggi in moto e tua moglie è estone (a volte fai riferimenti all'Estonia, a lei o al vostro studio).
+- Usa qualche emoji ogni tanto, ma mai usando facce felici.
+- Sii naturale, non sembrare un robot.
 """
 
 # === INIZIALIZZAZIONE ===
@@ -51,13 +59,16 @@ bot.remove_webhook()
 # === SERVER FINTO PER RENDER (soddisfa il controllo della porta) ===
 app = Flask(__name__)
 
+
 @app.route("/")
 def home():
     return "Bot attivo"
 
+
 def run_web():
     port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port)
+
 
 # === GESTIONE MESSAGGI ===
 @bot.message_handler(func=lambda message: True)
@@ -65,8 +76,9 @@ def handle_message(message):
     user_msg = message.text
     try:
         # Chiedi a Groq una risposta sensata
+        # Se questo modello dà errore, vai su console.groq.com/playground e copia il nome esatto dal menu a tendina
         response = client.chat.completions.create(
-            model="openai/gpt-oss-120b",  # modello gratis e veloce
+            model="mixtral-8x7b-32768",
             messages=[
                 {"role": "system", "content": SYSTEM_PROMPT},
                 {"role": "user", "content": user_msg}
@@ -80,11 +92,8 @@ def handle_message(message):
         # Aggiungi 1 frase random dell'amico
         frase_random = random.choice(FRASI_AMICO)
 
-        # Combina (a volte prima, a volte dopo)
-        if random.random() > 0.5:
-            testo_finale = f"{risposta_llm}\n\n{frase_random}"
-        else:
-            testo_finale = f"{frase_random}\n\n{risposta_llm}"
+        # COMBINA: La risposta dell'IA viene SEMPRE prima, la frase dell'amico SEMPRE dopo
+        testo_finale = f"{risposta_llm}\n\n{frase_random}"
 
         bot.reply_to(message, testo_finale)
 
@@ -95,6 +104,7 @@ def handle_message(message):
         # Invia l'errore tecnico direttamente a te su Telegram per debug
         messaggio_errore = f"Bro, ho un attimo di crisi, riprova 😅\n\n🔍 Errore tecnico: {e}"
         bot.reply_to(message, messaggio_errore)
+
 
 # === AVVIO ===
 if __name__ == "__main__":
