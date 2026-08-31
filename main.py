@@ -83,7 +83,7 @@ def handle_message(message):
                 {"role": "system", "content": SYSTEM_PROMPT},
                 {"role": "user", "content": user_msg}
             ],
-            max_tokens=150,
+            max_tokens=300,
             temperature=0.8
         )
 
